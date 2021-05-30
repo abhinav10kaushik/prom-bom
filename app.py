@@ -14,10 +14,10 @@ CONTENT_TYPE_LATEST = str('text/plain; version=0.0.4; charset=utf-8')
 
 ###### Prometheus Client #######
 # Initialise GAUGE 
-current_temprature = Gauge( 'current_temprature', 'Current Temparature of City', ['city'] , unit='Celcius')
+current_temperature = Gauge( 'current_temperature', 'Current Temparature of City', ['city'] , unit='Celcius')
 
 # Initialise HISTOGRAM
-temprature_frequency  = Histogram('temprature_frequency',  'Frequency of temprature occurance', ['city'] , buckets=(-10.0, -5.0, 0.0, 5.0 , 10.0, 15.0, 20, 25, 30) )
+temperature_frequency  = Histogram('temperature_frequency',  'Frequency of temperature occurance', ['city'] , buckets=(-10.0, -5.0, 0.0, 5.0 , 10.0, 15.0, 20, 25, 30) )
 
 # Get list of cities from the config file
 def get_city_from_config():
@@ -63,25 +63,25 @@ def get_data():
     """
     This function get triggered whenever '/metrics' path is hit on this application's server.
 
-    First, it clears the temprature frequency histogram buckets so that values doesn't get added
+    First, it clears the temperature frequency histogram buckets so that values doesn't get added
     up everytime the this function is called.
 
     Then, For every city provided in the config file the data is fetched and parsed into 'p'.
 
-    Gauge - current_temprature:
-    current_temprature is set as the first object of 'data' since the data coming from BOM is sorted
+    Gauge - current_temperature:
+    current_temperature is set as the first object of 'data' since the data coming from BOM is sorted
     based on the latest time.
 
-    Histogram - temprature_frequency:
-    temprature_frequency is observed by going through all the data objects in the parsed data fetched
-    from BOM. Observed tempratures are placed in the following buckets.
+    Histogram - temperature_frequency:
+    temperature_frequency is observed by going through all the data objects in the parsed data fetched
+    from BOM. Observed temperatures are placed in the following buckets.
     buckets=(-10.0, -5.0, 0.0, 5.0 , 10.0, 15.0, 20, 25, 30)
     All of these buckets are set as 'le' -> less or equal
 
     """
 
-    # Have to clear the temprature_frequecy, otherwise it histogram keeps adding the value on every request made.
-    temprature_frequency.clear()
+    # Have to clear the temperature_frequecy, otherwise it histogram keeps adding the value on every request made.
+    temperature_frequency.clear()
     
     # Work for every city in the list
     for url in get_city_from_config():
@@ -90,14 +90,14 @@ def get_data():
         parsed = get_data_from_bom(url)
 
         # GAUGE
-        # Get latest temprature for Gauge
+        # Get latest temperature for Gauge
         p = parsed['observations']['data'][0]
-        current_temprature.labels(p['name']).set(p["air_temp"])
+        current_temperature.labels(p['name']).set(p["air_temp"])
 
         # Histogram
-        # Get all the temprature frequencies for Histogram
+        # Get all the temperature frequencies for Histogram
         for d in parsed['observations']['data']:
-            temprature_frequency.labels((d["name"])).observe((d["air_temp"]))
+            temperature_frequency.labels((d["name"])).observe((d["air_temp"]))
     
     return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
