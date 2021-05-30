@@ -48,6 +48,9 @@ def get_data_from_bom(my_url):
 #Get data into Gauge and Histogram
 def get_data():
 
+    # Have to clear the temprature_frequecy, otherwise it histogram keeps adding the value on every request made.
+    temprature_frequency.clear()
+    
     # Work for every city in the list
     for url in get_city_from_config():
 
